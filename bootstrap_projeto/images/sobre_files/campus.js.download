@@ -1,0 +1,29 @@
+$(function(){
+	if(typeof $.fn.mask !== 'undefined') {
+		$('input[name=cpf]').mask('999.999.999-99');
+	}
+
+	if(typeof $.fn.mCustomScrollbar !== 'undefined'){
+	$('.box-notificacao-duvidas').mCustomScrollbar({
+		theme:"dark",
+		 mouseWheelPixels: 200
+	});
+	}
+
+	$('.notifications').click(function(){
+		if($('.box-notificacao-duvidas').is(':visible')== false){
+			$('.box-notificacao-duvidas').fadeIn();
+			$('.arrow-indicator-box-duvidas').fadeIn();
+		}else{
+			$('.box-notificacao-duvidas').fadeOut();
+			$('.arrow-indicator-box-duvidas').fadeOut();
+		}
+
+	})
+
+	$('.nav-campus a').click(function(e){
+		var target = $(this).attr('target');
+		e.preventDefault();
+		$('html,body').animate({'scrollTop':$('#'+target).offset().top});
+	})
+})

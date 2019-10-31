@@ -1,0 +1,60 @@
+$(function(){
+
+	var isOpen = false;
+
+	$('.info-user-btn a.btn1:not(.campus_btn)').click(function(e){
+		e.preventDefault();
+		if(isOpen){
+			$('.login-form,.drop-arrow').fadeOut();
+			isOpen = false;
+		}
+		else{
+			$('.login-form,.drop-arrow').fadeIn();
+			isOpen = true;
+		}
+		e.stopPropagation();
+		return false;
+	})
+
+
+	$('.login-form').click(function(e){
+		e.preventDefault();
+		e.stopPropagation();
+	})
+
+	$('.info-user-btn form input[type=submit]').click(function(e){
+		e.stopPropagation();
+	})
+
+	$('.login-form span').click(function(){
+		location.href=include_path+"recuperar";
+	})
+
+	$('#loginForm').ajaxForm({
+		dataType:'json',
+		beforeSubmit:function(){
+				$('#loginForm').animate({'opacity':'0.3'});
+				$('#loginForm').find('input[type=submit]').attr('disabled','');
+		},
+		success:function(data){
+			
+			$('#loginForm').animate({'opacity':'1'});
+			$('#loginForm').find('input[type=submit]').removeAttr('disabled');
+			if(data.status == 'sucesso'){
+				location.href=include_path+"campus";
+			}else{
+				if(data.blocked === undefined){
+					$('#loginForm').shake(2,8,200);
+					applyBorder($('#loginForm'));
+				}else{
+					alert("Você está com o acesso bloqueado devido logar na mesma conta simultaneamente! Aguarde 5 minutos.");
+				}
+			}
+			
+			//console.log(data);
+		}
+	})
+	
+
+
+})

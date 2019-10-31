@@ -1,0 +1,105 @@
+var base = $('base').attr('base'); 
+var directory = base+'app/Views/public/';
+var include_path = base;
+
+var timeout;
+
+jQuery.fn.shake = function(intShakes, intDistance, intDuration) {
+    this.each(function() {
+        $(this).css("position","relative"); 
+        for (var x=1; x<=intShakes; x++) {
+        $(this).animate({left:(intDistance*-1)}, (((intDuration/intShakes)/4)))
+    .animate({left:intDistance}, ((intDuration/intShakes)/2))
+    .animate({left:0}, (((intDuration/intShakes)/4)));
+    }
+  });
+return this;
+};
+
+function renderNotification(title,msg,form,type,settimeout){
+	clearTimeout(timeout);
+	$('.sucesso,.erro').remove();
+	$('<div class="box-alert '+type+'"><h2>'+title+'</h2><p>'+msg+'</p></div>').insertBefore(form).fadeIn();
+	if(type == 'sucesso'){
+		form[0].reset();
+	}
+	$('html,body').animate({'scrollTop':$('.box-alert').offset().top});
+
+	if(settimeout == undefined){
+	timeout=setTimeout(function(){
+		$('.box-alert').fadeOut(function(){
+			$(this).remove();
+		})
+	},5000);
+	}
+	
+}
+
+function renderNotificationNoScroll(title,msg,form,type,settimeout){
+	clearTimeout(timeout);
+	$('.sucesso,.erro').remove();
+	$('<div class="box-alert '+type+'"><h2>'+title+'</h2><p>'+msg+'</p></div>').insertBefore(form).fadeIn();
+	if(type == 'sucesso'){
+		form[0].reset();
+	}
+
+	if(settimeout == undefined){
+	timeout=setTimeout(function(){
+		$('.box-alert').fadeOut(function(){
+			$(this).remove();
+		})
+	},5000);
+	}
+	
+}
+
+
+function renderErro(msg,form){
+	var newmsg = '';
+	for(var i = 0; i < msg.length; i++){
+		newmsg+='*'+msg[i];
+		if(i < msg.length - 1){
+			newmsg+='<br>';
+		}
+	}
+	
+	$('.sucesso,.erro').remove();
+	$('<div class="box-alert erro"><h2>Os seguintes erros foram encontrados:</h2><p>'+newmsg+'</p></div>').insertBefore(form).fadeIn();
+
+	$('html,body').animate({'scrollTop':$('.box-alert').offset().top});
+	form.find('input').one('focus',function(){
+		$('.box-alert').fadeOut(function(){
+			$(this).remove();
+		})
+	})
+}
+
+function renderErroNoScroll(msg,form){
+	var newmsg = '';
+	for(var i = 0; i < msg.length; i++){
+		newmsg+='*'+msg[i];
+		if(i < msg.length - 1){
+			newmsg+='<br>';
+		}
+	}
+	
+	$('.sucesso,.erro').remove();
+	$('<div class="box-alert erro"><h2>Os seguintes erros foram encontrados:</h2><p>'+newmsg+'</p></div>').insertBefore(form).fadeIn();
+
+	form.find('input').one('focus',function(){
+		$('.box-alert').fadeOut(function(){
+			$(this).remove();
+		})
+	})
+}
+
+
+function applyBorder(form){
+	form.data('border',form.find('input[type=text],input[type=email],input[type=password]').css('border'));
+	form.find('input[type=text],input[type=email],input[type=password]').css('border','1px solid red');
+	form.find('input').one('focus',function(){
+
+		form.find('input[type=text],input[type=email],input[type=password]').css('border',form.data('border'));
+		form.removeData('border');
+	})
+}

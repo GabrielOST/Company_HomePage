@@ -1,0 +1,290 @@
+
+$(window).on('load',function(){
+
+
+
+	$('.modulo-single h2').click(function(){
+		var aulas = $(this).next();
+		if(aulas.is(':visible')){
+			aulas.hide();
+			$(this).find('i').removeClass('fa fa-caret-down');
+			$(this).find('i').addClass('fa fa-caret-up');
+		}else{
+			aulas.show();
+						$(this).find('i').removeClass('fa fa-caret-up');
+			$(this).find('i').addClass('fa fa-caret-down');
+		}
+		
+	})
+
+	var anotacoes = "";
+	setInterval(function(){
+		//Atualizar anotações!
+		var atualAnotacoes = $('.box-anotacoes textarea').val();
+		if(atualAnotacoes != anotacoes){
+			//Enviar ajax!
+			//console.log("nova anotacao");
+			anotacoes = atualAnotacoes;
+			$.ajax({
+				method:'post',
+				data:{anotacao:anotacoes,aula_id:$('.box-anotacoes textarea').attr('aula_id')},
+				url:include_path+'ajax/anotacoes.php',
+			}).done(function(data){
+				//console.log(data);
+			})
+		}else{
+			//console.log("nada");
+		}
+	},5000)
+
+	$('.btn-anotacoes-aula').click(function(){
+		$('.box-anotacoes').fadeIn();
+	})
+
+	$('.btn-close-anotacoes').click(function(){
+		$('.box-anotacoes').fadeOut();
+	})
+
+	$('[resetBtn]').click(function(){
+			var confirm = window.confirm("Tem certeza que deseja resetar seu progresso?");
+			if(confirm)
+				return true;
+			else
+				return false;	
+	})
+
+
+	$('.hide-aulas').click(function(){
+		if($('.aulas-sidebar').is(':visible')){
+			$('.aulas-sidebar').hide();
+			$('.aula-main').css('width','100%');
+		}else{
+			var windowSize = $(window)[0].innerWidth;
+			if(windowSize > 1280){
+			$('.aulas-sidebar').show();
+			$('.aula-main').css('width','80%');
+			}else{
+			$('.aulas-sidebar').show();
+			$('.aula-main').css('width','75%');
+			}
+		}
+	})
+
+	$('.aulas-sidebar').mCustomScrollbar({
+		  mouseWheelPixels: 200,
+		  callbacks:{
+		  onUpdate:function(){
+	
+		  	$('.aulas-sidebar').mCustomScrollbar('scrollTo',$('[targetaulascroll]'),{
+		  		scrollInertia:0
+		  	});
+		  	
+		  
+		  }
+		}
+	});
+	/*
+	$('.aulas-sidebar').mCustomScrollbar("scrollTo",$('[targetaulascroll]'),{
+		scrollInertia:0
+	});
+	*/
+
+	checkDuvidaTarget();
+
+	function checkDuvidaTarget(){
+		//Verificamos se existe um elemento de duvidas com base no GET para descer a página
+		if($('[targetduvida]').length > 0){
+			var off = $('[targetduvida]').offset().top;
+			$('body,html').animate({'scrollTop':off},1000,function(){});
+		}
+	}
+
+	
+	insertCode();
+
+	function insertCode(){
+		$('.form-duvida input[type=button]').click(function(){
+			var textarea = $('.form-duvida').find('textarea');
+			if(textarea.val() == '')
+				textarea.val(textarea.val()+'`'+'\n//Substitua pelo seu código! (Mantenha as aspas acima e abaixo para a formatação ficar correta)\n'+'`');
+			else
+				textarea.val(textarea.val()+'\n`'+'\n//Substitua pelo seu código! (Mantenha as aspas acima e abaixo para a formatação ficar correta)\n'+'`');
+		})
+	}
+
+	$('pre code').each(function(i, block) {
+    	hljs.highlightBlock(block);
+  	});
+
+	adjust();
+	$('footer').hide();
+
+	function adjust(){
+		if($('.aulas-sidebar').is(':visible')){
+		var newWidth = $(window)[0].innerWidth;
+		if(newWidth > 768){
+			if($(document).scrollTop() >= $('.aula-flex').offset().top){
+				initSideBar('begin');
+			}else{
+				initSideBar('relative');
+			}
+		}else{
+			resetSideBar();
+		}
+	}
+		
+	}
+
+
+	function initSideBar(pos){
+		if(pos == 'relative'){
+			$('.aulas-sidebar').css('top',$('.aula-flex').offset().top-$(document).scrollTop()).css('height',$(window).height()-$('.aula-flex').offset().top+$(document).scrollTop()+1).css('position','static');
+			$('.aula-main').css('left','0');
+
+		}else if(pos == 'begin'){
+			$('.aulas-sidebar').css('top','0').css('height',$(window).height()+1).css('position','fixed');
+			if($(window)[0].innerWidth <= 1280){
+				$('.aula-main').css('left','25%');
+			}
+			else{
+				$('.aula-main').css('left','20%');
+			}
+		}
+
+
+
+
+	}
+
+	function resetSideBar(){
+		$('.aulas-sidebar').css('top','0').css('height','auto').css('position','static');
+		$('.aula-main').css('left','0%');
+	}
+
+
+	$(window).scroll(function(){
+		adjust();
+	});
+
+	$(window).resize(function(){
+		adjust();
+	})
+
+
+
+	//Vimeo callback
+
+	var callback = false;
+	var iframe = document.querySelector('iframe');
+    var player = new Vimeo.Player(iframe);
+
+    var observerDom = function(target){
+        MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+
+        var observer = new MutationObserver(function(mutations, observer) {
+            if(mutations[0].attributeName == 'src'){
+                window.location.href = '/';
+            }
+        });
+
+        observer.observe(target, {
+          subtree: true,
+          attributes: true
+        });
+    }
+
+  player.ready().then(function() {
+   observerDom(iframe);
+});
+
+        
+  
+  if($('dontgotonext').size() == 0){
+    player.on('ended', function() {
+    	//console.log("Video terminado!");
+    	if(callback === false){
+    	callback = true;
+	    sendAulaConcluida();
+	 	}
+    });
+    
+}
+    
+    function sendAulaConcluida(){
+    	var aula_id = $('.btns a').attr('aula_id');
+    	
+    	if(aula_id !== undefined){
+    	$.ajax({
+    		dataType:'json',
+    		url:include_path+'ajax/aulaconcluida.php',
+    		method:'post',
+    		data:{'aula_id':aula_id}
+    	}).done(function(data){
+    		
+    		if(data.error === undefined){
+    		//alert('Aula concluida com sucesso!');
+    		setTimeout(function(){
+    			location.href=data.link;
+    		},5000)
+    		
+    		}else{
+    			console.log(data.error);
+    		}
+			//console.log(data);
+    	})
+    	}
+    }
+
+    var hasSearch = false;
+    var last = "";
+
+    setInterval(function(){
+
+    	var pesquisar = $('input[name=pesquisa_aula]').val().toLowerCase();
+    	if(pesquisar == ''){
+    		//Mostrar tudo!
+    		if(hasSearch){
+    			hasSearch = false;
+    			//alert('mostra tudo!');
+	    		$('.modulo-single').show();
+	    		$('.modulo-single a').show();
+		    	$('.aulas-sidebar').mCustomScrollbar("scrollTo",$('[targetaulascroll]'),{
+						scrollInertia:0
+				});
+    		}
+    	}else{
+    		//$('.aulas-sidebar').mCustomScrollbar("disable",true);
+    		if(last == pesquisar)
+    			return;
+    		last = pesquisar;
+    		hasSearch = true;
+    		//alert('pesquisa específica');
+    		$('.modulo-single').hide();
+    		$('.modulo-single a').hide();
+    		var found = false;
+	    	$('.modulo-single a').each(function(){
+	    		
+	    			var nomeAula = $(this).html().toLowerCase();
+	    			var nomeModulo = $(this).parent().parent().find('h2').find('span').html().toLowerCase();
+	    			if(nomeAula.search(pesquisar) != '-1' || nomeModulo.search(pesquisar) != '-1'){
+	    				//console.log($(this).html());
+	    				$(this).parent().parent().show();
+	    				$(this).show();
+	    				found = true;
+	    			}
+	    			
+	    	});
+	    	if(found){
+	    		
+	    	}
+    	}
+
+    },1000);
+    	
+   
+
+
+})
+
+
+

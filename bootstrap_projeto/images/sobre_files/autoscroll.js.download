@@ -1,0 +1,6 @@
+$(window).on('load',function(){
+	if($('go').length > 0){
+		var off = $('#'+$('go').attr('to')).offset().top;
+		$('html,body').animate({'scrollTop':off});
+	}
+})
